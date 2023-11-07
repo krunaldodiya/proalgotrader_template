@@ -1,0 +1,8 @@
+pandas-ta
+pytz
+requests
+pyotp
+fyers_apiv3
+dependency_injector
+proalgotrader_protocols
+pusher
