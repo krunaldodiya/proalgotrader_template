@@ -41,15 +41,5 @@ pip install -r requirements.txt
 Run strategy
 
 ```bash
-trader_cli run <PROJECT_ID> <MODE>
-
-MODE can be Paper or Live.
-```
-
-## Available commands
-
-```bash
-trader_cli login
-trader_cli run <PROJECT_ID> <MODE>
-trader_cli deploy <PROJECT_ID> <MODE>
+python main.py --key <ALGO_SESSION_KEY> --secret <ALGO_SESSION_SECRET>
 ```
