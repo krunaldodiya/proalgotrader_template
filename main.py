@@ -1,4 +1,8 @@
-from proalgotrader_strategy_runner import run_strategy
+import uvicorn
+
+from test import app
+
+app.state = {"host": "127.0.0.1", "port": 5555}
 
 if __name__ == "__main__":
-    run_strategy()
+    uvicorn.run(app, host=app.state["host"], port=app.state["port"])
