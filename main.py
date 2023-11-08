@@ -1,6 +1,6 @@
 import uvicorn
 
-from proalgotrader_strategy_runner.main import app
+from proalgotrader_manager.main import app
 
 app.state = {"host": "127.0.0.1", "port": 5555}
 

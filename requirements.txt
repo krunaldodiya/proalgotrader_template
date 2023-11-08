@@ -1,4 +1,4 @@
 proalgotrader_protocols
-proalgotrader_strategy_runner
+proalgotrader_manager
 pandas_ta
 uvicorn
