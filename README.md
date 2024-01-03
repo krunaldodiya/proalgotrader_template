@@ -20,12 +20,14 @@ You can find your PROJECT_REPOSITORY_URL from ProAlgoTrader Project Dashboard.
 
 ### Step 2
 
-Create a virtual environment
+Create and activate virtual environment
 
 ```bash
 cd <PROJECT_DIRECTORY>
 
 python -m venv .venv
+
+source .venv/bin/activate
 ```
 
 ### Step 3
@@ -41,5 +43,5 @@ pip install -r requirements.txt
 Run strategy
 
 ```bash
-python main.py --key <ALGO_SESSION_KEY> --secret <ALGO_SESSION_SECRET>
+docker-compose up
 ```
