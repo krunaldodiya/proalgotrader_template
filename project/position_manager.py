@@ -25,5 +25,6 @@ class PositionManager:
         await self.risk_reward.next()
 
     async def on_exit(self, type):
-        print("type", type)
+        print(f"{type} hit.")
+
         await self.position.exit()

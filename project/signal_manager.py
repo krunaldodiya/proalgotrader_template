@@ -32,15 +32,15 @@ class SignalManager:
         )
 
     @property
-    def rsi(self):
+    def rsi_14(self):
         return self.equity_chart.add_indicator(
-            "rsi", lambda data: ta.rsi(close=data.close, length=14)
+            "rsi_14", lambda data: ta.rsi(close=data.close, length=14)
         )
 
     @property
-    def adx(self):
+    def adx_14(self):
         return self.equity_chart.add_indicator(
-            "adx",
+            "adx_14",
             lambda data: ta.adx(
                 high=data.high, low=data.low, close=data.close, length=14
             ),
@@ -69,33 +69,96 @@ class SignalManager:
         return (first.iloc[-1] > second.iloc[-1]) and (first.iloc[-2] < second.iloc[-2])
 
     async def next(self):
-        between_time = self.algorithm.between_time(time(9, 20), time(15, 15))
+        between_time = self.algorithm.between_time(time(9, 20), time(15, 20))
 
         if not between_time:
             return
 
         if not self.algorithm.open_positions:
-            bullish_crossover = self.crossover(
-                self.sma_9.data["SMA_9"], self.sma_14.data["SMA_14"]
+            candle_signal = None
+
+            if (
+                self.equity_chart.data.close.iloc[-2]
+                > self.equity_chart.data.open.iloc[-2]
+                and self.equity_chart.data.close.iloc[-1]
+                > self.equity_chart.data.open.iloc[-1]
+            ):
+                candle_signal = "long"
+
+            if (
+                self.equity_chart.data.close.iloc[-2]
+                < self.equity_chart.data.open.iloc[-2]
+                and self.equity_chart.data.close.iloc[-1]
+                < self.equity_chart.data.open.iloc[-1]
+            ):
+                candle_signal = "short"
+
+            sma_signal = None
+
+            if (
+                self.sma_9.data["SMA_9"].iloc[-2] > self.sma_14.data["SMA_14"].iloc[-2]
+                and self.sma_9.data["SMA_9"].iloc[-1]
+                > self.sma_14.data["SMA_14"].iloc[-1]
+            ):
+                sma_signal = "long"
+
+            if (
+                self.sma_9.data["SMA_9"].iloc[-2] < self.sma_14.data["SMA_14"].iloc[-2]
+                and self.sma_9.data["SMA_9"].iloc[-1]
+                < self.sma_14.data["SMA_14"].iloc[-1]
+            ):
+                sma_signal = "short"
+
+            rsi_signal = None
+
+            if (
+                self.rsi_14.data["RSI_14"].iloc[-1]
+                > self.rsi_14.data["RSI_14"].iloc[-2]
+                and self.rsi_14.data["RSI_14"].iloc[-1] > 20
+            ):
+                rsi_signal = "long"
+
+            if (
+                self.rsi_14.data["RSI_14"].iloc[-1]
+                < self.rsi_14.data["RSI_14"].iloc[-2]
+                and self.rsi_14.data["RSI_14"].iloc[-1] < 80
+            ):
+                rsi_signal = "short"
+
+            adx_signal = False
+
+            if (
+                self.adx_14.data["ADX_14"].iloc[-2] > 20
+                and self.adx_14.data["ADX_14"].iloc[-1] > 20
+            ):
+                adx_signal = True
+
+            should_long = (
+                candle_signal == "long"
+                and sma_signal == "long"
+                and rsi_signal == "long"
+                and adx_signal
             )
 
-            bearish_crossover = self.crossover(
-                self.sma_14.data["SMA_14"], self.sma_9.data["SMA_9"]
+            should_short = (
+                candle_signal == "short"
+                and sma_signal == "short"
+                and rsi_signal == "short"
+                and adx_signal
             )
 
-            rsi_signal = (
-                self.rsi.data["RSI_14"].iloc[-1] > 20
-                and self.rsi.data["RSI_14"].iloc[-1] < 80
-            )
+            print("candle_signal", candle_signal)
+            print("sma_signal", sma_signal)
+            print("rsi_signal", rsi_signal)
+            print("adx_signal", adx_signal)
+            print("\n")
 
-            adx_signal = self.adx.data["ADX_14"].iloc[-1] > 25
-
-            if bullish_crossover and rsi_signal and adx_signal:
+            if should_long:
                 await self.algorithm.buy(
                     symbol=self.ce_symbol, quantities=self.get_quantities()
                 )
 
-            if bearish_crossover and rsi_signal and adx_signal:
+            if should_short:
                 await self.algorithm.buy(
-                    symbol=self.ce_symbol, quantities=self.get_quantities()
+                    symbol=self.pe_symbol, quantities=self.get_quantities()
                 )
