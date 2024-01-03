@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   proalgotrader_core:
-    image: ghcr.io/krunaldodiya/proalgotrader_core
+    image: ghcr.io/krunaldodiya/proalgotrader_core:latest
     container_name: proalgotrader_core
     env_file:
       - .env
