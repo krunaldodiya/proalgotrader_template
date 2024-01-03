@@ -1,10 +1,17 @@
 version: "3.8"
 services:
-  proalgotrader_core:
+  development:
     image: ghcr.io/krunaldodiya/proalgotrader_core:latest
-    container_name: proalgotrader_core
+    container_name: proalgotrader_core_development
     env_file:
       - .env
     command: ["./proalgotrader"]
     volumes:
       - ./project:/app/project
+
+  production:
+    image: ghcr.io/krunaldodiya/proalgotrader_core:latest
+    container_name: proalgotrader_core_production
+    env_file:
+      - .env
+    command: ["./proalgotrader"]

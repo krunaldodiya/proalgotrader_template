@@ -43,5 +43,11 @@ pip install -r requirements.txt
 Run strategy
 
 ```bash
-docker-compose up
+docker-compose up <ENVIRONMENT>
+
+# for development environment
+docker-compose up development
+
+# for production environment
+docker-compose up production
 ```
