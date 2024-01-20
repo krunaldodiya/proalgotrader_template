@@ -1,7 +1,9 @@
 version: "3.8"
 services:
   development:
-    image: ghcr.io/krunaldodiya/proalgotrader_core:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: proalgotrader_core_development
     env_file:
       - .env
@@ -10,7 +12,9 @@ services:
       - ./project:/app/project
 
   production:
-    image: ghcr.io/krunaldodiya/proalgotrader_core:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: proalgotrader_core_production
     env_file:
       - .env
