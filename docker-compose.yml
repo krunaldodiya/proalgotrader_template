@@ -5,7 +5,7 @@ services:
     container_name: proalgotrader_core_development
     env_file:
       - .env
-    command: ["./proalgotrader", "--environment", "development"]
+    command: ["python", "main.py", "--environment", "development"]
     volumes:
       - ./project:/app/project
 
@@ -14,4 +14,4 @@ services:
     container_name: proalgotrader_core_production
     env_file:
       - .env
-    command: ["./proalgotrader", "--environment", "production"]
+    command: ["python", "main.py", "--environment", "production"]

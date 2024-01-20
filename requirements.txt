@@ -1,3 +1,4 @@
+proalgotrader_core
 proalgotrader_protocols
-pandas
+fyers_apiv3
 pandas_ta
