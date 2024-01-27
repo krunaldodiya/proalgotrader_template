@@ -1,3 +1,2 @@
 proalgotrader_core
-proalgotrader_protocols
 pandas_ta
