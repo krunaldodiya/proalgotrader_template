@@ -1,14 +1,14 @@
-from proalgotrader_core.protocols.position_manager import PositionManager_Protocol
-
 from proalgotrader_core.algorithm import Algorithm
-
 from proalgotrader_core.position import Position
+from proalgotrader_core.protocols.position_manager import PositionManagerProtocol
 
 
-class PositionManager(PositionManager_Protocol):
+class PositionManager(PositionManagerProtocol):
     def __init__(self, algorithm: Algorithm, position: Position) -> None:
         self.algorithm = algorithm
         self.position = position
+
+        self.risk_reward = None
 
     async def initialize(self) -> None:
         self.risk_reward = await self.position.get_risk_reward(

@@ -1,22 +1,21 @@
-import pandas as pd
+from datetime import timedelta
 
+import pandas as pd
 import pandas_ta as ta
 
-from datetime import time, timedelta
-
-from proalgotrader_core.protocols.signal_manager import SignalManager_Protocol
-
 from proalgotrader_core.algorithm import Algorithm
-
 from proalgotrader_core.broker_symbol import BrokerSymbol
-
 from proalgotrader_core.protocols.enums.symbol_type import SymbolType
+from proalgotrader_core.protocols.signal_manager import SignalManagerProtocol
 
 
-class SignalManager(SignalManager_Protocol):
+class SignalManager(SignalManagerProtocol):
     def __init__(self, symbol: SymbolType, algorithm: Algorithm) -> None:
         self.symbol = symbol
         self.algorithm = algorithm
+
+        self.equity_chart = None
+        self.equity_symbol = None
 
     async def initialize(self) -> None:
         self.equity_symbol = self.algorithm.add_equity(self.symbol)
