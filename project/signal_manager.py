@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, time
 
 import pandas as pd
 import pandas_ta as ta
@@ -10,15 +10,15 @@ from proalgotrader_core.protocols.signal_manager import SignalManagerProtocol
 
 
 class SignalManager(SignalManagerProtocol):
-    def __init__(self, symbol: SymbolType, algorithm: Algorithm) -> None:
-        self.symbol = symbol
+    def __init__(self, symbol_type: SymbolType, algorithm: Algorithm) -> None:
+        self.symbol_type = symbol_type
         self.algorithm = algorithm
 
         self.equity_chart = None
         self.equity_symbol = None
 
     async def initialize(self) -> None:
-        self.equity_symbol = self.algorithm.add_equity(self.symbol)
+        self.equity_symbol = self.algorithm.add_equity(symbol_type=self.symbol_type)
 
         self.equity_chart = await self.algorithm.add_chart(
             self.equity_symbol, timedelta(minutes=5)
@@ -54,84 +54,76 @@ class SignalManager(SignalManagerProtocol):
         return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), +2, "PE")
 
     async def next(self) -> None:
-        print(self.equity_chart.data)
+        between_time = self.algorithm.between_time(time(9, 20), time(15, 20))
 
-        # between_time = self.algorithm.between_time(time(9, 20), time(15, 20))
+        if not between_time:
+            return
 
-        # if not between_time:
-        #     return
+        if self.algorithm.open_positions:
+            return
 
-        # if self.algorithm.positions:
-        #     return
+        candle_signal = None
 
-        # candle_signal = None
+        if (
+            self.equity_chart.data.close.iloc[-2] > self.equity_chart.data.open.iloc[-2]
+            and self.equity_chart.data.close.iloc[-1]
+            > self.equity_chart.data.open.iloc[-1]
+        ):
+            candle_signal = "long"
 
-        # if (
-        #     self.equity_chart.data.close.iloc[-2] > self.equity_chart.data.open.iloc[-2]
-        #     and self.equity_chart.data.close.iloc[-1]
-        #     > self.equity_chart.data.open.iloc[-1]
-        # ):
-        #     candle_signal = "long"
+        if (
+            self.equity_chart.data.close.iloc[-2] < self.equity_chart.data.open.iloc[-2]
+            and self.equity_chart.data.close.iloc[-1]
+            < self.equity_chart.data.open.iloc[-1]
+        ):
+            candle_signal = "short"
 
-        # if (
-        #     self.equity_chart.data.close.iloc[-2] < self.equity_chart.data.open.iloc[-2]
-        #     and self.equity_chart.data.close.iloc[-1]
-        #     < self.equity_chart.data.open.iloc[-1]
-        # ):
-        #     candle_signal = "short"
+        sma_signal = None
 
-        # sma_signal = None
+        if (
+            self.sma_9.iloc[-2] > self.sma_14.iloc[-2]
+            and self.sma_9.iloc[-1] > self.sma_14.iloc[-1]
+        ):
+            sma_signal = "long"
 
-        # if (
-        #     self.sma_9.data["SMA_9"].iloc[-2] > self.sma_14.data["SMA_14"].iloc[-2]
-        #     and self.sma_9.data["SMA_9"].iloc[-1] > self.sma_14.data["SMA_14"].iloc[-1]
-        # ):
-        #     sma_signal = "long"
+        if (
+            self.sma_9.iloc[-2] < self.sma_14.iloc[-2]
+            and self.sma_9.iloc[-1] < self.sma_14.iloc[-1]
+        ):
+            sma_signal = "short"
 
-        # if (
-        #     self.sma_9.data["SMA_9"].iloc[-2] < self.sma_14.data["SMA_14"].iloc[-2]
-        #     and self.sma_9.data["SMA_9"].iloc[-1] < self.sma_14.data["SMA_14"].iloc[-1]
-        # ):
-        #     sma_signal = "short"
+        rsi_signal = False
 
-        # rsi_signal = None
+        if 20 < self.rsi_14.iloc[-2] < 80 and 20 < self.rsi_14.iloc[-1] < 80:
+            rsi_signal = True
 
-        # if (
-        #     self.rsi_14.data["RSI_14"].iloc[-1] > self.rsi_14.data["RSI_14"].iloc[-2]
-        #     and self.rsi_14.data["RSI_14"].iloc[-1] > 20
-        # ):
-        #     rsi_signal = "long"
+        adx_signal = False
 
-        # if (
-        #     self.rsi_14.data["RSI_14"].iloc[-1] < self.rsi_14.data["RSI_14"].iloc[-2]
-        #     and self.rsi_14.data["RSI_14"].iloc[-1] < 80
-        # ):
-        #     rsi_signal = "short"
+        if self.adx_14["ADX_14"].iloc[-2] > 20 and self.adx_14["ADX_14"].iloc[-1] > 20:
+            adx_signal = True
 
-        # adx_signal = False
+        should_long = (
+            candle_signal == "long"
+            and sma_signal == "long"
+            and rsi_signal
+            and adx_signal
+        )
 
-        # if (
-        #     self.adx_14.data["ADX_14"].iloc[-2] > 20
-        #     and self.adx_14.data["ADX_14"].iloc[-1] > 20
-        # ):
-        #     adx_signal = True
+        should_short = (
+            candle_signal == "short"
+            and sma_signal == "short"
+            and rsi_signal
+            and adx_signal
+        )
 
-        # should_long = (
-        #     candle_signal == "long"
-        #     and sma_signal == "long"
-        #     and rsi_signal == "long"
-        #     and adx_signal
-        # )
+        print("candle_signal", candle_signal)
+        print("sma_signal", sma_signal)
+        print("rsi_signal", rsi_signal)
+        print("adx_signal", adx_signal)
+        print("\n")
 
-        # should_short = (
-        #     candle_signal == "short"
-        #     and sma_signal == "short"
-        #     and rsi_signal == "short"
-        #     and adx_signal
-        # )
+        if should_long:
+            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=50)
 
-        # if should_long:
-        #     await self.algorithm.buy(symbol=self.ce_symbol, quantities=50)
-
-        # if should_short:
-        #     await self.algorithm.buy(symbol=self.pe_symbol, quantities=50)
+        if should_short:
+            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=50)
