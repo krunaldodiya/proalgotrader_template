@@ -115,7 +115,7 @@ class SignalManager(SignalManagerProtocol):
         )
 
         if should_long:
-            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=100)
+            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=50)
 
         if should_short:
-            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=100)
+            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=50)
