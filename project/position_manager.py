@@ -17,7 +17,6 @@ class PositionManager(PositionManagerProtocol):
 
         self.risk_reward = await self.position.get_risk_reward(
             broker_symbol=broker_symbol,
-            direction="long",
             sl=20,
             tgt=60,
             tsl=10,
