@@ -19,9 +19,17 @@ class PositionManager(PositionManagerProtocol):
             broker_symbol=broker_symbol,
             direction="long",
             sl=20,
-            tgt=40,
+            tgt=60,
             tsl=10,
         )
 
     async def next(self) -> None:
+        print(f"{'symbol':<30} {self.position.broker_symbol.symbol_name}")
+        print(f"{'ltp':<30} {self.risk_reward.broker_symbol.tick.ltp}")
+        print(f"{'trailed_stoploss':<30} {self.risk_reward.trailed_stoploss}")
+        print(f"{'stoploss':<30} {self.risk_reward.stoploss}")
+        print(f"{'target':<30} {self.risk_reward.target}")
+        print(f"{'direction':<30} {self.risk_reward.direction}")
+        print("\n")
+
         await self.risk_reward.next()

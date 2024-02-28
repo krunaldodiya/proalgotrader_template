@@ -59,22 +59,20 @@ class SignalManager(SignalManagerProtocol):
         if not between_time:
             return
 
-        if self.algorithm.open_positions:
+        if self.algorithm.positions:
             return
 
         candle_signal = None
 
         if (
-            self.equity_chart.data.close.iloc[-2] > self.equity_chart.data.open.iloc[-2]
-            and self.equity_chart.data.close.iloc[-1]
-            > self.equity_chart.data.open.iloc[-1]
+            self.equity_chart.data.close.iloc[-1] > self.sma_9.iloc[-1]
+            and self.equity_chart.data.close.iloc[-1] > self.sma_14.iloc[-1]
         ):
             candle_signal = "long"
 
         if (
-            self.equity_chart.data.close.iloc[-2] < self.equity_chart.data.open.iloc[-2]
-            and self.equity_chart.data.close.iloc[-1]
-            < self.equity_chart.data.open.iloc[-1]
+            self.equity_chart.data.close.iloc[-1] < self.sma_9.iloc[-1]
+            and self.equity_chart.data.close.iloc[-1] < self.sma_14.iloc[-1]
         ):
             candle_signal = "short"
 
@@ -94,7 +92,7 @@ class SignalManager(SignalManagerProtocol):
 
         rsi_signal = False
 
-        if 20 < self.rsi_14.iloc[-2] < 80 and 20 < self.rsi_14.iloc[-1] < 80:
+        if 30 < self.rsi_14.iloc[-2] < 70 and 30 < self.rsi_14.iloc[-1] < 70:
             rsi_signal = True
 
         adx_signal = False
@@ -116,14 +114,8 @@ class SignalManager(SignalManagerProtocol):
             and adx_signal
         )
 
-        print("candle_signal", candle_signal)
-        print("sma_signal", sma_signal)
-        print("rsi_signal", rsi_signal)
-        print("adx_signal", adx_signal)
-        print("\n")
-
         if should_long:
-            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=50)
+            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=100)
 
         if should_short:
-            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=50)
+            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=100)
