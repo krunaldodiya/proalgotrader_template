@@ -65,13 +65,17 @@ class SignalManager(SignalManagerProtocol):
         candle_signal = None
 
         if (
-            self.equity_chart.data.close.iloc[-1] > self.sma_9.iloc[-1]
+            self.equity_chart.data.close.iloc[-2] > self.sma_9.iloc[-2]
+            and self.equity_chart.data.close.iloc[-2] > self.sma_14.iloc[-2]
+            and self.equity_chart.data.close.iloc[-1] > self.sma_9.iloc[-1]
             and self.equity_chart.data.close.iloc[-1] > self.sma_14.iloc[-1]
         ):
             candle_signal = "long"
 
         if (
-            self.equity_chart.data.close.iloc[-1] < self.sma_9.iloc[-1]
+            self.equity_chart.data.close.iloc[-2] < self.sma_9.iloc[-2]
+            and self.equity_chart.data.close.iloc[-2] < self.sma_14.iloc[-2]
+            and self.equity_chart.data.close.iloc[-1] < self.sma_9.iloc[-1]
             and self.equity_chart.data.close.iloc[-1] < self.sma_14.iloc[-1]
         ):
             candle_signal = "short"
