@@ -19,7 +19,8 @@ class PositionManager(PositionManagerProtocol):
             broker_symbol=broker_symbol,
             sl=20,
             tgt=60,
-            tsl=10,
+            tsl=5,
+            on_exit=self.on_exit
         )
 
     async def next(self) -> None:
@@ -32,3 +33,6 @@ class PositionManager(PositionManagerProtocol):
         print("\n")
 
         await self.risk_reward.next()
+
+    async def on_exit(self) -> None:
+        await self.position.exit()

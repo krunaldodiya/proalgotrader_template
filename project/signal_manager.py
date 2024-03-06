@@ -24,13 +24,29 @@ class SignalManager(SignalManagerProtocol):
             self.equity_symbol, timedelta(minutes=5)
         )
 
+        self.tradable_quantities = 50
+
     @property
-    def sma_9(self) -> pd.DataFrame | pd.Series:
-        return ta.sma(close=self.equity_chart.data.close, length=9)
+    def supertrend_14(self) -> pd.DataFrame | pd.Series:
+        return ta.supertrend(
+            high=self.equity_chart.data.high,
+            low=self.equity_chart.data.low,
+            close=self.equity_chart.data.close,
+            length=14,
+            multiplier=1,
+        )
+
+    @property
+    def sma_7(self) -> pd.DataFrame | pd.Series:
+        return ta.sma(close=self.equity_chart.data.close, length=7)
 
     @property
     def sma_14(self) -> pd.DataFrame | pd.Series:
         return ta.sma(close=self.equity_chart.data.close, length=14)
+
+    @property
+    def sma_21(self) -> pd.DataFrame | pd.Series:
+        return ta.sma(close=self.equity_chart.data.close, length=21)
 
     @property
     def rsi_14(self) -> pd.DataFrame | pd.Series:
@@ -47,11 +63,11 @@ class SignalManager(SignalManagerProtocol):
 
     @property
     def ce_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), -2, "CE")
+        return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), -4, "CE")
 
     @property
     def pe_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), +2, "PE")
+        return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), +4, "PE")
 
     async def next(self) -> None:
         between_time = self.algorithm.between_time(time(9, 20), time(15, 20))
@@ -61,65 +77,69 @@ class SignalManager(SignalManagerProtocol):
 
         if self.algorithm.positions:
             return
-
-        candle_signal = None
-
-        if (
-            self.equity_chart.data.close.iloc[-2] > self.sma_9.iloc[-2]
-            and self.equity_chart.data.close.iloc[-2] > self.sma_14.iloc[-2]
-            and self.equity_chart.data.close.iloc[-1] > self.sma_9.iloc[-1]
-            and self.equity_chart.data.close.iloc[-1] > self.sma_14.iloc[-1]
-        ):
-            candle_signal = "long"
+        
+        if self.algorithm.total_pnl <= -(self.tradable_quantities * 50):
+            return
+        
+        if self.algorithm.total_pnl >= +(self.tradable_quantities * 150):
+            return
+        
+        supertrend_signal = None
 
         if (
-            self.equity_chart.data.close.iloc[-2] < self.sma_9.iloc[-2]
-            and self.equity_chart.data.close.iloc[-2] < self.sma_14.iloc[-2]
-            and self.equity_chart.data.close.iloc[-1] < self.sma_9.iloc[-1]
-            and self.equity_chart.data.close.iloc[-1] < self.sma_14.iloc[-1]
+            self.equity_chart.data.close.iloc[-2] > self.supertrend_14["SUPERT_14_1.0"].iloc[-2]
         ):
-            candle_signal = "short"
+            supertrend_signal = "long"
+
+        if (
+            self.equity_chart.data.close.iloc[-2] < self.supertrend_14["SUPERT_14_1.0"].iloc[-2]
+        ):
+            supertrend_signal = "short"
 
         sma_signal = None
 
         if (
-            self.sma_9.iloc[-2] > self.sma_14.iloc[-2]
-            and self.sma_9.iloc[-1] > self.sma_14.iloc[-1]
+            self.sma_7.iloc[-2] > self.sma_14.iloc[-2] > self.sma_21.iloc[-2]
         ):
             sma_signal = "long"
 
         if (
-            self.sma_9.iloc[-2] < self.sma_14.iloc[-2]
-            and self.sma_9.iloc[-1] < self.sma_14.iloc[-1]
+            self.sma_7.iloc[-2] < self.sma_14.iloc[-2] < self.sma_21.iloc[-2]
         ):
             sma_signal = "short"
 
         rsi_signal = False
 
-        if 30 < self.rsi_14.iloc[-2] < 70 and 30 < self.rsi_14.iloc[-1] < 70:
+        if 30 < self.rsi_14.iloc[-2] < 70:
             rsi_signal = True
 
         adx_signal = False
 
-        if self.adx_14["ADX_14"].iloc[-2] > 20 and self.adx_14["ADX_14"].iloc[-1] > 20:
+        if self.adx_14["ADX_14"].iloc[-2] > 25:
             adx_signal = True
 
         should_long = (
-            candle_signal == "long"
+            supertrend_signal == "long"
             and sma_signal == "long"
             and rsi_signal
             and adx_signal
         )
 
         should_short = (
-            candle_signal == "short"
+            supertrend_signal == "short"
             and sma_signal == "short"
             and rsi_signal
             and adx_signal
         )
 
+        print("supertrend_signal",supertrend_signal)
+        print("sma_signal",sma_signal)
+        print("rsi_signal",rsi_signal)
+        print("adx_signal",adx_signal)
+        print("\n")
+
         if should_long:
-            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=50)
+            await self.algorithm.buy(broker_symbol=self.ce_symbol, quantities=self.tradable_quantities)
 
         if should_short:
-            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=50)
+            await self.algorithm.buy(broker_symbol=self.pe_symbol, quantities=self.tradable_quantities)

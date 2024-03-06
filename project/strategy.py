@@ -19,7 +19,7 @@ class Strategy(StrategyProtocol):
             account_type=AccountType.DERIVATIVE_INTRADAY
         )
 
-        await self.algorithm.set_signals(symbol_types=[SymbolType.NIFTY])
+        await self.algorithm.set_symbols(symbol_types=[SymbolType.NIFTY])
 
     async def next(self) -> None:
         pass
