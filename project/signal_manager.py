@@ -1,8 +1,8 @@
-from datetime import timedelta, time
-
+import math
 import pandas as pd
 import pandas_ta as ta
 
+from datetime import timedelta, time
 from proalgotrader_core.algorithm import Algorithm
 from proalgotrader_core.broker_symbol import BrokerSymbol
 from proalgotrader_core.protocols.enums.symbol_type import SymbolType
@@ -24,7 +24,13 @@ class SignalManager(SignalManagerProtocol):
             self.equity_symbol, timedelta(minutes=5)
         )
 
-        self.tradable_quantities = 50
+        min_capital_per_lot = 40_000
+
+        number_lots = math.floor(self.algorithm.broker_manager.current_capital / min_capital_per_lot)
+
+        lot_size = self.equity_symbol.base_symbol.lot_size
+
+        self.tradable_quantities = number_lots * lot_size
 
     @property
     def supertrend_14(self) -> pd.DataFrame | pd.Series:
@@ -74,14 +80,21 @@ class SignalManager(SignalManagerProtocol):
 
         if not between_time:
             return
+        
+        if self.tradable_quantities == 0:
+            print("Insufficient Balance", self.algorithm.broker_manager.current_capital)
+            return
 
         if self.algorithm.positions:
             return
         
-        if self.algorithm.total_pnl <= -(self.tradable_quantities * 50):
+        max_daily_loss = self.algorithm.broker_manager.initial_capital * 0.05
+        max_daily_profit = self.algorithm.broker_manager.initial_capital * 0.15
+        
+        if self.algorithm.total_pnl['loss'] >= max_daily_loss:
             return
         
-        if self.algorithm.total_pnl >= +(self.tradable_quantities * 150):
+        if self.algorithm.total_pnl['profit'] >= max_daily_profit:
             return
         
         supertrend_signal = None
