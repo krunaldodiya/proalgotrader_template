@@ -39,7 +39,7 @@ class SignalManager(SignalManagerProtocol):
             low=self.equity_chart.data.low,
             close=self.equity_chart.data.close,
             length=14,
-            multiplier=1,
+            multiplier=2,
         )
 
     @property
