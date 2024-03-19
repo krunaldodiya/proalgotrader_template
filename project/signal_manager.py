@@ -63,11 +63,11 @@ class SignalManager(SignalManagerProtocol):
 
     @property
     def ce_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), -4, "CE")
+        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), -4, "CE")
 
     @property
     def pe_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.NIFTY, ("weekly", 0), +4, "PE")
+        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), +4, "PE")
 
     async def next(self) -> None:
         between_time = self.algorithm.between_time(time(9, 20), time(15, 20))

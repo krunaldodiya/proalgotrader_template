@@ -13,7 +13,7 @@ class PositionManager(PositionManagerProtocol):
         self.risk_reward: RiskReward | None = None
 
     async def initialize(self) -> None:
-        broker_symbol = self.algorithm.add_equity(symbol_type=SymbolType.NIFTY)
+        broker_symbol = self.algorithm.add_equity(symbol_type=SymbolType.Index.NIFTY)
 
         self.risk_reward = await self.position.get_risk_reward(
             broker_symbol=broker_symbol,
