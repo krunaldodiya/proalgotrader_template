@@ -24,7 +24,7 @@ class SignalManager(SignalManagerProtocol):
             self.equity_symbol, timedelta(minutes=5)
         )
 
-        min_capital_per_lot = 40_000
+        min_capital_per_lot = 30_000
 
         number_lots = math.floor(self.algorithm.broker_manager.current_capital / min_capital_per_lot)
 
@@ -69,11 +69,11 @@ class SignalManager(SignalManagerProtocol):
 
     @property
     def ce_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), -4, "CE")
+        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), -2, "CE")
 
     @property
     def pe_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), +4, "PE")
+        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), +2, "PE")
 
     async def next(self) -> None:
         between_time = self.algorithm.between_time(time(9, 20), time(15, 20))
@@ -128,7 +128,7 @@ class SignalManager(SignalManagerProtocol):
 
         adx_signal = False
 
-        if self.adx_14["ADX_14"].iloc[-2] > 25:
+        if 25 < self.adx_14["ADX_14"].iloc[-2] < 50:
             adx_signal = True
 
         should_long = (

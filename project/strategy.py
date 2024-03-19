@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from proalgotrader_core.algorithm import Algorithm
 from proalgotrader_core.protocols.enums.account_type import AccountType
 from proalgotrader_core.protocols.enums.symbol_type import SymbolType
@@ -9,6 +11,8 @@ from project.signal_manager import SignalManager
 class Strategy(StrategyProtocol):
     def __init__(self, algorithm: Algorithm) -> None:
         self.algorithm = algorithm
+
+        self.algorithm.set_sleep_time(sleep_time=timedelta(seconds=1))
 
         self.algorithm.set_signal_manager(signal_manager=SignalManager)
 
