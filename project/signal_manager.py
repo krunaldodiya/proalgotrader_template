@@ -33,7 +33,7 @@ class SignalManager(SignalManagerProtocol):
         self.tradable_quantities = number_lots * lot_size
 
     @property
-    def supertrend_14(self) -> pd.DataFrame | pd.Series:
+    def supertrend_14(self) -> pd.DataFrame | pd.Series:        
         return ta.supertrend(
             high=self.equity_chart.data.high,
             low=self.equity_chart.data.low,
@@ -100,12 +100,12 @@ class SignalManager(SignalManagerProtocol):
         supertrend_signal = None
 
         if (
-            self.equity_chart.data.close.iloc[-2] > self.supertrend_14["SUPERT_14_1.0"].iloc[-2]
+            self.equity_chart.data.close.iloc[-2] > self.supertrend_14["SUPERT_14_2.0"].iloc[-2]
         ):
             supertrend_signal = "long"
 
         if (
-            self.equity_chart.data.close.iloc[-2] < self.supertrend_14["SUPERT_14_1.0"].iloc[-2]
+            self.equity_chart.data.close.iloc[-2] < self.supertrend_14["SUPERT_14_2.0"].iloc[-2]
         ):
             supertrend_signal = "short"
 
