@@ -24,9 +24,13 @@ class SignalManager(SignalManagerProtocol):
             self.equity_symbol, timedelta(minutes=5)
         )
 
-        min_capital_per_lot = 30_000
+        self.max_daily_loss_percent = self.algorithm.broker_manager.initial_capital * 0.03
 
-        number_lots = math.floor(self.algorithm.broker_manager.current_capital / min_capital_per_lot)
+        self.max_daily_profit_percent = self.algorithm.broker_manager.initial_capital * 0.10
+
+        self.min_capital_per_lot = 30_000
+
+        number_lots = math.floor(self.algorithm.broker_manager.current_capital / self.min_capital_per_lot)
 
         lot_size = self.equity_symbol.base_symbol.lot_size
 
@@ -43,16 +47,12 @@ class SignalManager(SignalManagerProtocol):
         )
 
     @property
-    def sma_7(self) -> pd.DataFrame | pd.Series:
-        return ta.sma(close=self.equity_chart.data.close, length=7)
+    def ema_7(self) -> pd.DataFrame | pd.Series:
+        return ta.ema(close=self.equity_chart.data.close, length=7)
 
     @property
-    def sma_14(self) -> pd.DataFrame | pd.Series:
-        return ta.sma(close=self.equity_chart.data.close, length=14)
-
-    @property
-    def sma_21(self) -> pd.DataFrame | pd.Series:
-        return ta.sma(close=self.equity_chart.data.close, length=21)
+    def ema_14(self) -> pd.DataFrame | pd.Series:
+        return ta.ema(close=self.equity_chart.data.close, length=14)
 
     @property
     def rsi_14(self) -> pd.DataFrame | pd.Series:
@@ -88,65 +88,62 @@ class SignalManager(SignalManagerProtocol):
         if self.algorithm.positions:
             return
         
-        max_daily_loss = self.algorithm.broker_manager.initial_capital * 0.05
-        max_daily_profit = self.algorithm.broker_manager.initial_capital * 0.15
-        
-        if self.algorithm.total_pnl['loss'] >= max_daily_loss:
+        if self.algorithm.total_pnl['loss'] >= self.max_daily_loss_percent:
             return
         
-        if self.algorithm.total_pnl['profit'] >= max_daily_profit:
+        if self.algorithm.total_pnl['profit'] >= self.max_daily_profit_percent:
             return
         
         supertrend_signal = None
 
         if (
-            self.equity_chart.data.close.iloc[-2] > self.supertrend_14["SUPERT_14_2.0"].iloc[-2]
+            (self.equity_chart.data.close.iloc[-2] > self.supertrend_14["SUPERT_14_2.0"].iloc[-2]) and (self.equity_chart.data.close.iloc[-1] > self.supertrend_14["SUPERT_14_2.0"].iloc[-1])
         ):
             supertrend_signal = "long"
 
         if (
-            self.equity_chart.data.close.iloc[-2] < self.supertrend_14["SUPERT_14_2.0"].iloc[-2]
+            (self.equity_chart.data.close.iloc[-2] < self.supertrend_14["SUPERT_14_2.0"].iloc[-2]) and (self.equity_chart.data.close.iloc[-1] < self.supertrend_14["SUPERT_14_2.0"].iloc[-1])
         ):
             supertrend_signal = "short"
-
-        sma_signal = None
-
-        if (
-            self.sma_7.iloc[-2] > self.sma_14.iloc[-2] > self.sma_21.iloc[-2]
-        ):
-            sma_signal = "long"
+        
+        ema_signal = None
 
         if (
-            self.sma_7.iloc[-2] < self.sma_14.iloc[-2] < self.sma_21.iloc[-2]
+            (self.ema_7.iloc[-2] > self.ema_14.iloc[-2]) and (self.ema_7.iloc[-1] > self.ema_14.iloc[-1])
         ):
-            sma_signal = "short"
+            ema_signal = "long"
+
+        if (
+            (self.ema_7.iloc[-2] < self.ema_14.iloc[-2]) and (self.ema_7.iloc[-1] < self.ema_14.iloc[-1])
+        ):
+            ema_signal = "short"
 
         rsi_signal = False
 
-        if 30 < self.rsi_14.iloc[-2] < 70:
+        if (30 < self.rsi_14.iloc[-2] < 70) and (30 < self.rsi_14.iloc[-1] < 70):
             rsi_signal = True
 
         adx_signal = False
 
-        if 25 < self.adx_14["ADX_14"].iloc[-2] < 50:
+        if (20 < self.adx_14["ADX_14"].iloc[-2] < 40) and (20 < self.adx_14["ADX_14"].iloc[-1] < 40):
             adx_signal = True
 
         should_long = (
             supertrend_signal == "long"
-            and sma_signal == "long"
+            and ema_signal == "long"
             and rsi_signal
             and adx_signal
         )
 
         should_short = (
             supertrend_signal == "short"
-            and sma_signal == "short"
+            and ema_signal == "short"
             and rsi_signal
             and adx_signal
         )
 
         print("supertrend_signal",supertrend_signal)
-        print("sma_signal",sma_signal)
+        print("ema_signal",ema_signal)
         print("rsi_signal",rsi_signal)
         print("adx_signal",adx_signal)
         print("\n")

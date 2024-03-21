@@ -24,6 +24,8 @@ class PositionManager(PositionManagerProtocol):
         )
 
     async def next(self) -> None:
+        print(f"{'Initial Capital':<30} {self.algorithm.broker_manager.initial_capital}")
+        print(f"{'Current Capital':<30} {self.algorithm.broker_manager.current_capital}")
         print(f"{'symbol':<30} {self.position.broker_symbol.symbol_name}")
         print(f"{'ltp':<30} {self.risk_reward.broker_symbol.tick.ltp}")
         print(f"{'trailed_stoploss':<30} {self.risk_reward.trailed_stoploss}")
