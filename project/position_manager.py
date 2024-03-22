@@ -19,7 +19,7 @@ class PositionManager(PositionManagerProtocol):
             broker_symbol=broker_symbol,
             sl=20,
             tgt=60,
-            tsl=5,
+            tsl=10,
             on_exit=self.on_exit
         )
 

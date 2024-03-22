@@ -28,7 +28,7 @@ class SignalManager(SignalManagerProtocol):
 
         self.max_daily_profit_percent = self.algorithm.broker_manager.initial_capital * 0.10
 
-        self.min_capital_per_lot = 30_000
+        self.min_capital_per_lot = 40_000
 
         number_lots = math.floor(self.algorithm.broker_manager.current_capital / self.min_capital_per_lot)
 
@@ -69,14 +69,14 @@ class SignalManager(SignalManagerProtocol):
 
     @property
     def ce_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), -2, "CE")
+        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), -4, "CE")
 
     @property
     def pe_symbol(self) -> BrokerSymbol:
-        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), +2, "PE")
+        return self.algorithm.add_option(SymbolType.Index.NIFTY, ("weekly", 0), +4, "PE")
 
     async def next(self) -> None:
-        between_time = self.algorithm.between_time(time(9, 20), time(15, 20))
+        between_time = self.algorithm.between_time(time(9, 30), time(15, 15))
 
         if not between_time:
             return
@@ -142,6 +142,7 @@ class SignalManager(SignalManagerProtocol):
             and adx_signal
         )
 
+        print("current_datetime", self.algorithm.current_datetime)
         print("supertrend_signal",supertrend_signal)
         print("ema_signal",ema_signal)
         print("rsi_signal",rsi_signal)
