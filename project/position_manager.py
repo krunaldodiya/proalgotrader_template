@@ -13,17 +13,18 @@ class PositionManager(PositionManagerProtocol):
         self.risk_reward: RiskReward | None = None
 
     async def initialize(self) -> None:
-        broker_symbol = self.algorithm.add_equity(symbol_type=SymbolType.Index.NIFTY)
+        broker_symbol = self.algorithm.add_equity(symbol_type=SymbolType.Index.BANKNIFTY)
 
         self.risk_reward = await self.position.get_risk_reward(
             broker_symbol=broker_symbol,
-            sl=20,
-            tgt=60,
+            sl=40,
+            tgt=120,
             tsl=10,
             on_exit=self.on_exit
         )
 
     async def next(self) -> None:
+        print(f"{'Current Datetime':<30} {self.algorithm.current_datetime}")
         print(f"{'Initial Capital':<30} {self.algorithm.broker_manager.initial_capital}")
         print(f"{'Current Capital':<30} {self.algorithm.broker_manager.current_capital}")
         print(f"{'symbol':<30} {self.position.broker_symbol.symbol_name}")
