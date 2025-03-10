@@ -9,6 +9,7 @@ To get started, follow simple step given below.
 ```
 
 ### How to Run strategy
+
 ```bash
 # for development environment
 python main.py --environment development
