@@ -1,86 +1,72 @@
-Yes, we can achieve this by modifying the code-server command in our entrypoint script to open the README.md file in preview mode when the IDE starts. Let's update the Dockerfile:
+# ProAlgoTrader Strategy Template
 
-```dockerfile:Dockerfile
-# Use the latest Python image
-FROM python:latest
+<div align="center">
+  <h1>📊</h1>
+  <h3>Professional Algorithmic Trading Made Simple</h3>
+</div>
 
-[previous content remains the same...]
+## Overview
 
-# Create entrypoint script with host binding and README preview
-RUN echo '#!/bin/bash\n\
-source /workspace/setup.sh\n\
-source /tmp/project_env\n\
-code-server --bind-addr "0.0.0.0:8080" --auth password "$PROJECT_PATH" --open-readme' > /workspace/entrypoint.sh && \
-chmod +x /workspace/entrypoint.sh
+This is the official template for creating ProAlgoTrader strategies. It provides a structured foundation for developing and deploying your trading algorithms.
 
-# Start code-server with the project directory
-CMD ["/workspace/entrypoint.sh"]
+## Quick Start Guide
+
+### 1. Environment Setup
+
+First, create your environment configuration:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
 ```
-However, I notice that the `--open-readme` flag isn't actually a valid code-server option. Let's use a different approach by creating a custom settings file that will automatically open README.md in preview mode:
 
-```dockerfile:Dockerfile
-# Use the latest Python image
-FROM python:latest
-
-[previous content remains the same...]
-
-# Create workspace directory
-RUN mkdir -p /workspace
-
-# Copy setup script
-COPY setup.sh /workspace/setup.sh
-RUN chmod +x /workspace/setup.sh && \
-    chown $USER:$USER /workspace/setup.sh
-
-# Set up working directory
-WORKDIR /workspace
-
-# Switch to the non-root user
-USER $USER
-
-# Create projects directory with correct permissions
-RUN mkdir -p $HOME/projects && \
-    chmod 755 $HOME/projects && \
-    # Create VSCode settings directory
-    mkdir -p $HOME/.local/share/code-server/User
-
-# Add VSCode settings to auto-open README
-RUN echo '{\n\
-    "workbench.startupEditor": "none",\n\
-    "workbench.editorAssociations": {\n\
-        "README.md": "vscode.markdown.preview"\n\
-    }\n\
-}' > $HOME/.local/share/code-server/User/settings.json
-
-# Expose the code-server port
-EXPOSE 8080
-
-# Create entrypoint script with host binding
-RUN echo '#!/bin/bash\n\
-source /workspace/setup.sh\n\
-source /tmp/project_env\n\
-code-server --bind-addr "0.0.0.0:8080" --auth password "$PROJECT_PATH" && \
-sleep 2 && \
-curl -X POST "http://localhost:8080/api/files" -H "Content-Type: application/json" -d "{\\"file\\": \\"README.md\\"}"' > /workspace/entrypoint.sh && \
-chmod +x /workspace/entrypoint.sh
-
-# Start code-server with the project directory
-CMD ["/workspace/entrypoint.sh"]
+Then edit `.env` file and update these essential values:
+```ini
+ALGO_SESSION_KEY=your_session_key
+ALGO_SESSION_SECRET=your_session_secret
 ```
-I've made two key changes:
 
-1. Added VSCode settings that:
-   - Disable the default welcome screen
-   - Associate README.md files with the markdown preview by default
+> 🔑 Get your session credentials from ProAlgoTrader Dashboard
 
-2. Modified the entrypoint script to:
-   - Start code-server normally
-   - Wait for it to be ready
-   - Open README.md automatically
+### 2. Running Your Strategy
 
-Now when users first access the IDE:
-1. The welcome screen will be disabled
-2. README.md will automatically open in preview mode
-3. Users will immediately see the documentation
+You can run your strategy in two environments:
 
-Let me know if you'd like me to make any adjustments to this setup!
+#### Development Mode
+```bash
+python main.py --environment development
+```
+- Uses development credentials
+- Enables detailed logging
+- Perfect for testing and debugging
+
+#### Production Mode
+```bash
+python main.py --environment production
+```
+- Uses production credentials
+- Optimized performance
+- For live trading
+
+## Strategy Development
+
+### Key Files
+- `main.py` - Entry point for your strategy
+- `.env` - Environment configuration
+- `requirements.txt` - Python dependencies
+
+### Best Practices
+1. Always test in development mode first
+2. Keep your credentials secure
+3. Regularly backup your strategy
+4. Monitor logs for performance
+
+## Support
+
+- 📚 Documentation
+- 💬 Community Forum
+- 📧 support@proalgotrader.com
+
+## License
+
+This template is provided as part of your ProAlgoTrader subscription.
